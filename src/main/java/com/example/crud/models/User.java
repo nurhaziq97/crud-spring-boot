@@ -1,5 +1,7 @@
 package com.example.crud.models;
 
+import org.springframework.lang.Nullable;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -24,6 +26,7 @@ public class User {
 
     @NotBlank
     @Size(max=50)
+    @Column(nullable = false)
     private String username;
 
     @NotBlank
@@ -35,6 +38,7 @@ public class User {
     @NotBlank
     @Size(max=50)
     @Email
+    @Column(nullable = false)
     private String email;
 
     @NotBlank
@@ -126,5 +130,19 @@ public class User {
 
     public void setBlogs(List<Blog> blogs) {
         this.blogs = blogs;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userId=" + userId +
+                ", roles=" + roles +
+                ", username='" + username + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", blogs=" + blogs +
+                '}';
     }
 }

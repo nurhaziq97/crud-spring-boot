@@ -32,7 +32,7 @@ public class Blog {
     private List<Tag> tags;
 
     @CreationTimestamp
-    @Column(name="create_date", updatable=false, nullable=false)
+    @Column(name="created_at", updatable=false, nullable=false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
 
@@ -111,5 +111,18 @@ public class Blog {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "Blog{" +
+                "Id=" + Id +
+                ", user=" + user +
+                ", title='" + title + '\'' +
+                ", content='" + content + '\'' +
+                ", tags=" + tags +
+                ", createDate=" + createDate +
+                ", updatedAt=" + updatedAt +
+                '}';
     }
 }

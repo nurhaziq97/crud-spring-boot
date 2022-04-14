@@ -1,4 +1,4 @@
-package com.example.crud.controllers.auths;
+package com.example.crud.controllers.auth;
 
 import com.example.crud.models.ERole;
 import com.example.crud.models.Role;
@@ -10,7 +10,9 @@ import com.example.crud.payload.response.MessageResponse;
 import com.example.crud.repositories.auths.RoleRepository;
 import com.example.crud.repositories.auths.UserRepository;
 import com.example.crud.security.jwt.JwtUtils;
-import com.example.crud.security.services.UserDetailsImpl;
+import com.example.crud.security.services.user.UserDetailsImpl;
+import org.apache.coyote.Response;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -50,8 +52,8 @@ public class AuthController {
 
     // maven hibernate-validator cannot be added to do javax.validation
     // if called, it will bypass javax.validation.Valid
-    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
+    @PostMapping(value = "/login")
+    public ResponseEntity<?> loginUser(@Valid @RequestBody @NotNull LoginRequest loginRequest) {
         // authenticate user
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(
@@ -124,6 +126,10 @@ public class AuthController {
                 .ok(new MessageResponse("User successfully registered"));
     }
 
+    @GetMapping("/login-error")
+    public ResponseEntity<?> loginErrorResponse () {
+        return ResponseEntity.badRequest().body("Wrong Email or Password");
+    }
 
     // spring boot will call this method on error when validation failed,
     // then, this method will return the json containing error message

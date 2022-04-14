@@ -1,4 +1,4 @@
-package com.example.crud.security.services;
+package com.example.crud.security.services.user;
 
 import com.example.crud.models.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.List;
 
-public class UserDetailsImpl implements UserDetails {
+public class  UserDetailsImpl implements UserDetails {
     private Long id;
     private String username;
     private String email;

@@ -1,4 +1,4 @@
-package com.example.crud.security.services;
+package com.example.crud.security.services.user;
 
 import com.example.crud.models.User;
 import com.example.crud.repositories.auths.UserRepository;
@@ -17,10 +17,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
+//        User user = userRepository.findByUsername(username)
+//                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
 
+        // override search user by using email
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
         return UserDetailsImpl.build(user);
     }
-
 }

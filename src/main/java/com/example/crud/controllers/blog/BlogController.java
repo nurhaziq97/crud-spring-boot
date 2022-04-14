@@ -3,15 +3,15 @@ package com.example.crud.controllers.blog;
 import com.example.crud.models.Blog;
 import com.example.crud.models.Tag;
 import com.example.crud.models.User;
+import com.example.crud.payload.mapper.BlogMapper;
 import com.example.crud.payload.request.BlogRequest;
 import com.example.crud.payload.response.MessageResponse;
 import com.example.crud.repositories.auths.UserRepository;
-import com.example.crud.repositories.blogs.BlogRepository;
 import com.example.crud.repositories.blogs.TagRepository;
-import com.example.crud.security.services.UserDetailsImpl;
+import com.example.crud.security.services.blog.BlogServiceImpl;
+import com.example.crud.security.services.user.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -27,27 +27,27 @@ public class BlogController {
     UserRepository userRepository;
 
     @Autowired
-    BlogRepository blogRepository;
-
-    @Autowired
     TagRepository tagRepository;
 
+    @Autowired
+    BlogServiceImpl blogServiceImpl;
+
     // Cannot call the SecurityContextHolder.getContext().getAuthentication() through global variable
-    // must e called inside method
+    // must be called inside method
     // this happened because the route for /api/blog do not have authentication set in WebSecurityConfig file.
 
-    @GetMapping(value="/{id}")
+    @GetMapping(value="/view/{id}")
+    @ResponseBody
     public ResponseEntity<?> getBlogByUser(
-            @PathVariable(value="id") Long itemId) {
-         final Authentication auth =
-                SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-        User user = new User(userDetails.getId(), userDetails.getUsername(),
-                userDetails.getFirstName(), userDetails.getLastName(),
-                userDetails.getEmail());
-        Blog blog = blogRepository.findById(itemId)
-                .orElseThrow(()->new IllegalArgumentException("Blog Not Found"));
-        return ResponseEntity.ok(blog);
+            @PathVariable(value="id") Long  blogId) {
+        if(blogId <= 0) {
+            return ResponseEntity.badRequest().body(
+                    new MessageResponse("No blog has been found")
+            );
+        }
+        Blog blog = blogServiceImpl.getBlog(blogId);
+//        System.out.println(blog.toString());
+        return ResponseEntity.ok(BlogMapper.toBlogResponse(blog));
     }
 
     @PostMapping(value="/create")
@@ -84,23 +84,38 @@ public class BlogController {
                 userDetails.getFirstName(), userDetails.getLastName(),
                 userDetails.getEmail());
         blog.setUser(user);
-        blogRepository.save(blog);
+        blog = blogServiceImpl.createBlog(blog);
 
         return ResponseEntity.ok(blog);
     }
 
     @PutMapping(value="/edit/{id}")
     public ResponseEntity<?> editBlog(
-            @PathVariable(value="id") int id,
+            @PathVariable(value="id") Long blogId,
             @RequestBody BlogRequest blogRequest) {
-         final Authentication auth =
-                SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-        Blog blog = blogRepository.findById((long) id)
-                .orElseThrow(()->new IllegalArgumentException("Blog Not Found"));
-        blog.setContent(blogRequest.getContent());
-        blog.setTitle(blogRequest.getTitle());
-        blogRepository.save(blog);
+//         final Authentication auth =
+//                SecurityContextHolder.getContext().getAuthentication();
+//        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+        Blog blog = blogServiceImpl.updateBlog(blogId, blogRequest.getTitle(), blogRequest.getContent());
         return ResponseEntity.ok(blog);
+    }
+
+    @GetMapping(value="/myblog")
+    public ResponseEntity<?> getUserBlog() {
+        final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails
+                = auth.getPrincipal() instanceof UserDetailsImpl ?
+                (UserDetailsImpl) auth.getPrincipal() : null;
+        if(userDetails==null) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("Login First"));
+        }
+        List<Blog> blogsList = blogServiceImpl.getBlogByUser(userDetails);
+        return ResponseEntity.ok(blogsList);
+    }
+
+    @GetMapping(value="/list")
+    public ResponseEntity<?> getAllBlog() {
+        return ResponseEntity.ok(blogServiceImpl.getAllBlogs());
     }
 }

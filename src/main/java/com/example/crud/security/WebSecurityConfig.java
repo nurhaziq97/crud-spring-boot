@@ -2,7 +2,7 @@ package com.example.crud.security;
 
 import com.example.crud.security.jwt.AuthEntryPointJwt;
 import com.example.crud.security.jwt.AuthTokenFilter;
-import com.example.crud.security.services.UserDetailsServiceImpl;
+import com.example.crud.security.services.user.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,16 +54,22 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors()
-                .and().csrf().disable()
+        http.cors().and().csrf().disable()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests()
-                .antMatchers("/api/blog/create").authenticated()
-                .antMatchers("/**").permitAll()
-                .antMatchers("/api/test/**").permitAll();
-//                .anyRequest().authenticated();
-//        .formLogin().loginPage("/api/auth/login").usernameParameter("email").permitAll().and()
+                .antMatchers("/api/auth/**").permitAll()
+                .antMatchers("api/blog/list").permitAll()
+                .antMatchers("/api/blog/view/*").permitAll() // permit when want to view the blog => find blog by id
+                .antMatchers("/api/test/**").permitAll()
+                .antMatchers("/api/blog/**").authenticated()
+                .and()
+                .authorizeRequests()
+                .anyRequest().authenticated();
+//                .and()
+//                .formLogin().loginProcessingUrl("/api/auth/login").permitAll()
+//                .usernameParameter("email");
+//                .failureUrl("/api/auth/login-error");
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 }
