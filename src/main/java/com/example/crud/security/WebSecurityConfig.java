@@ -62,6 +62,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("api/blog/list").permitAll()
                 .antMatchers("/api/blog/view/*").permitAll() // permit when want to view the blog => find blog by id
                 .antMatchers("/api/test/**").permitAll()
+                .antMatchers("/api/blog/").permitAll()
                 .antMatchers("/api/blog/**").authenticated()
                 .and()
                 .authorizeRequests()

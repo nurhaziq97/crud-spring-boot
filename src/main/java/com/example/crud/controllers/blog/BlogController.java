@@ -5,6 +5,7 @@ import com.example.crud.models.Tag;
 import com.example.crud.models.User;
 import com.example.crud.payload.mapper.BlogMapper;
 import com.example.crud.payload.request.BlogRequest;
+import com.example.crud.payload.response.BlogResponse;
 import com.example.crud.payload.response.MessageResponse;
 import com.example.crud.repositories.auths.UserRepository;
 import com.example.crud.repositories.blogs.TagRepository;
@@ -20,6 +21,7 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/blog")
 public class BlogController {
@@ -93,29 +95,49 @@ public class BlogController {
     public ResponseEntity<?> editBlog(
             @PathVariable(value="id") Long blogId,
             @RequestBody BlogRequest blogRequest) {
-//         final Authentication auth =
-//                SecurityContextHolder.getContext().getAuthentication();
-//        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-        Blog blog = blogServiceImpl.updateBlog(blogId, blogRequest.getTitle(), blogRequest.getContent());
-        return ResponseEntity.ok(blog);
+         final Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+        Blog blog = blogServiceImpl.updateBlog(blogId, blogRequest.getTitle(), blogRequest.getContent(), userDetails);
+        BlogResponse blogResponse = new BlogResponse(blog.getTitle(), blog.getContent(), blog.getTags());
+        return ResponseEntity.ok(blogResponse);
     }
 
     @GetMapping(value="/myblog")
     public ResponseEntity<?> getUserBlog() {
         final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails
-                = auth.getPrincipal() instanceof UserDetailsImpl ?
-                (UserDetailsImpl) auth.getPrincipal() : null;
-        if(userDetails==null) {
-            return ResponseEntity.badRequest()
-                    .body(new MessageResponse("Login First"));
+                = (UserDetailsImpl) auth.getPrincipal();
+        List<Blog> blogs = blogServiceImpl.getBlogByUser(userDetails);
+        List<BlogResponse> blogsList = new ArrayList<>();
+
+        for(Blog blog:blogs) {
+            blogsList.add(BlogMapper.toBlogResponse(blog));
         }
-        List<Blog> blogsList = blogServiceImpl.getBlogByUser(userDetails);
         return ResponseEntity.ok(blogsList);
     }
 
-    @GetMapping(value="/list")
+    @GetMapping(value="/")
     public ResponseEntity<?> getAllBlog() {
-        return ResponseEntity.ok(blogServiceImpl.getAllBlogs());
+        List<Blog> blogs = blogServiceImpl.getAllBlogs();
+        if(blogs.size() <= 0 ) {
+            return ResponseEntity.ok(new MessageResponse("No Blog has been posted yet"));
+        }
+        List<BlogResponse> blogsList = new ArrayList<>();
+        for(Blog blog : blogs) {
+            blogsList.add(BlogMapper.toBlogResponse(blog));
+        }
+        return ResponseEntity.ok(blogsList);
+    }
+
+
+    @DeleteMapping(value="/delete/{id}")
+    public ResponseEntity<?> deleteBlog(@PathVariable(value="id") Long blogId) {
+        final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails
+                = (UserDetailsImpl) auth.getPrincipal();
+        blogServiceImpl.deleteBlog(blogId, userDetails);
+
+        return ResponseEntity.ok(new MessageResponse("successfully delete the blog"));
     }
 }

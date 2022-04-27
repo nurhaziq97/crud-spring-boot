@@ -11,9 +11,12 @@ import java.util.ArrayList;
 public class BlogMapper {
     public static BlogResponse toBlogResponse(Blog blog) {
         return new BlogResponse(
+                blog.getBlogId(),
                 blog.getTitle(),
                 blog.getContent(),
-                new ArrayList<Tag>()
+                new ArrayList<Tag>(),
+                blog.getUser(),
+                blog.getCreateDate()
         );
     }
 }

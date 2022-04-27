@@ -15,6 +15,6 @@ public interface BlogRepository extends JpaRepository<Blog,Long> {
 
 //    public List<Blog> findBlogsByUser(User user, Pageable pageable);
 
-    public List<Blog> findBlogsByUser(UserDetailsImpl user);
+    public List<Blog> findBlogsByUser(User user);
 
 }

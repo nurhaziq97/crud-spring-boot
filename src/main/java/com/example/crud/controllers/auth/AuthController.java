@@ -32,8 +32,9 @@ import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/auth") //http://localhost:8080/api/user
+@RequestMapping("/api/auth") //http://localhost:8080/api/**
 public class AuthController {
     @Autowired
     AuthenticationManager authenticationManager;

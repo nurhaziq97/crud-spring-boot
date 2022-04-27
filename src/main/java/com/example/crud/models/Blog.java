@@ -5,7 +5,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.List;
 
@@ -15,13 +14,15 @@ public class Blog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="blog_id", insertable = false, updatable = false)
-    private Long Id;
+    private Long blogId;
 
     @ManyToOne
     private User user;
     @NotBlank
     private String title;
     @NotBlank
+    @Lob
+    @Column(length=1024)
     private String content;
 
 
@@ -44,8 +45,8 @@ public class Blog {
     public Blog() {
     }
 
-    public Blog(Long id, User user, String title, String content, List<Tag> tags) {
-        Id = id;
+    public Blog(Long blogId, User user, String title, String content, List<Tag> tags) {
+        this.blogId = blogId;
         this.user = user;
         this.title = title;
         this.content = content;
@@ -57,12 +58,12 @@ public class Blog {
         this.content = content;
     }
 
-    public Long getId() {
-        return Id;
+    public Long getBlogId() {
+        return blogId;
     }
 
-    public void setId(Long id) {
-        Id = id;
+    public void setBlogId(Long blogId) {
+        this.blogId = blogId;
     }
 
     public User getUser() {
@@ -116,7 +117,7 @@ public class Blog {
     @Override
     public String toString() {
         return "Blog{" +
-                "Id=" + Id +
+                "Id=" + blogId +
                 ", user=" + user +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +

@@ -2,9 +2,11 @@ package com.example.crud.security.services.blog;
 
 import com.example.crud.models.Blog;
 import com.example.crud.models.User;
+import com.example.crud.repositories.auths.UserRepository;
 import com.example.crud.repositories.blogs.BlogRepository;
 import com.example.crud.security.services.user.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -12,31 +14,35 @@ import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Service
-public class BlogServiceImpl implements BlogService{
+public class BlogServiceImpl {
 
     @Autowired
     BlogRepository blogRepository;
 
-    @Override
+    @Autowired
+    UserRepository userRepository;
+
     public Blog createBlog(Blog blog) {
         return blogRepository.save(blog);
     }
 
-    @Override
     public List<Blog> getAllBlogs() {
         return blogRepository.findAll();
     }
 
-    @Override
     public Blog getBlog(Long blogId) {
         return blogRepository.findById(blogId).orElseThrow(
                 () -> new IllegalArgumentException("Invalid Blog Id")
         );
     }
 
-    @Override
-    public void deleteBlog(Long blogId) {
+    public void deleteBlog(Long blogId, UserDetailsImpl userDetails) {
         Blog blog = getBlog(blogId);
+        User user = userRepository.findByEmail(userDetails.getEmail())
+                .orElseThrow(()->new UsernameNotFoundException("Does not found user"));
+        if(blog.getUser() != user) {
+            throw new IllegalArgumentException("Blog does not belong to this user");
+        }
         blogRepository.delete(blog);
     }
 
@@ -51,10 +57,14 @@ public class BlogServiceImpl implements BlogService{
      * @param blogContent
      * @return
      */
-    @Override
     @Transactional
-    public Blog updateBlog(Long blogId, @NotBlank String blogTitle, @NotBlank String blogContent) {
+    public Blog updateBlog(Long blogId, @NotBlank String blogTitle, @NotBlank String blogContent, UserDetailsImpl userDetails) {
         Blog blog = getBlog(blogId);
+        User user = userRepository.findByEmail(userDetails.getEmail())
+                .orElseThrow(()->new UsernameNotFoundException("User not found"));
+        if(blog.getUser() != user) {
+            throw new IllegalArgumentException("Blog does not belong to this user");
+        }
         if(blogTitle.length() > 0 && !blogTitle.equalsIgnoreCase(blog.getTitle())) {
             blog.setTitle(blogTitle);
         }
@@ -67,8 +77,8 @@ public class BlogServiceImpl implements BlogService{
         return blog;
     }
 
-    @Override
-    public List<Blog> getBlogByUser(UserDetailsImpl user) {
+    public List<Blog> getBlogByUser(UserDetailsImpl userDetails) {
+        User user = userRepository.getById(userDetails.getId());
         return blogRepository.findBlogsByUser(user);
     }
 }
