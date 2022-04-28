@@ -21,7 +21,7 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "*", maxAge = 36000)
 @RestController
 @RequestMapping("/api/blog")
 public class BlogController {
@@ -100,7 +100,7 @@ public class BlogController {
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
         Blog blog = blogServiceImpl.updateBlog(blogId, blogRequest.getTitle(), blogRequest.getContent(), userDetails);
         BlogResponse blogResponse = new BlogResponse(blog.getTitle(), blog.getContent(), blog.getTags());
-        return ResponseEntity.ok(blogResponse);
+        return ResponseEntity.ok(new MessageResponse("success"));
     }
 
     @GetMapping(value="/myblog")
