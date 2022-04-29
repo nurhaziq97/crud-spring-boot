@@ -20,9 +20,10 @@ public class Blog {
     private User user;
     @NotBlank
     private String title;
+    // for postgresql @Lob annotation cannot be accepted
+    // for mysql using @Lob will make the column datatype to change into longtext / text
     @NotBlank
-    @Lob
-    @Column(length=1024)
+    @Column(length=1024, columnDefinition = "text")
     private String content;
 
 
